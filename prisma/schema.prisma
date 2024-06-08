@@ -1,0 +1,64 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  name     String @unique
+  password String
+
+  ethAddress    String @unique
+  ethPrivateKey String @unique
+
+  intellectualProperties           IntellectualProperty[]
+  intellectualPropertyTransactions IntellectualPropertyTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model IntellectualProperty {
+  id          String @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  description String
+  price       String
+  owner       User   @relation(fields: [ownerId], references: [id])
+  ownerId     String @db.ObjectId
+
+  documentHash         String
+  fileName             String
+  transactionProofHash String?
+  status               String?
+
+  intellectualPropertyTransactions IntellectualPropertyTransaction[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  deleted   Boolean   @default(false)
+  deletedAt DateTime?
+}
+
+model IntellectualPropertyTransaction {
+  id              String               @id @default(auto()) @map("_id") @db.ObjectId
+  buyer           User                 @relation(fields: [buyerId], references: [id])
+  buyerId         String               @db.ObjectId
+  property        IntellectualProperty @relation(fields: [propertyId], references: [id])
+  propertyId      String               @db.ObjectId
+  price           String
+  transactionHash String
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+}
